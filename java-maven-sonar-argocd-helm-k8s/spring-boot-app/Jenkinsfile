@@ -5,6 +5,10 @@ pipeline {
         maven 'Maven-3.9'
     }
 
+    environment {
+        SONAR_URL = 'http://sonarqube:9000'
+    }
+
     stages {
         stage('checkout') {
             steps {
@@ -13,9 +17,20 @@ pipeline {
         }
         stage('build and test') {
             steps {
-                sh 'ls -ltr'
-                sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && mvn clean package'
+                dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app')
+                sh 'mvn clean package'
             }
         }
-    }
+        stage('Sonarqube analysis') {
+            steps {
+                dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
+                    withSonarQubeEnv('SonarQube-Server') {
+                        sh '''
+                          mvn sonar:sonar \
+                            -Dsonar.projectKey=my-java-app-key \
+                            -Dsonar.projectName="My Java Application" \
+                            -Dsonar.java.binaries=target/classes
+                        '''
+                    }
+                }
 }
