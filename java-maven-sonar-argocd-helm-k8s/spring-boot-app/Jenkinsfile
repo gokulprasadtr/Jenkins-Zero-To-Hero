@@ -7,5 +7,10 @@ pipeline {
                 git branch: 'jenkins', url: 'https://github.com/gokulprasadtr/Jenkins-Zero-To-Hero.git'
             }
         }
+        stage('build and test') {
+            steps {
+                sh 'ls -ltr'
+            }
+        }
     }
 }
