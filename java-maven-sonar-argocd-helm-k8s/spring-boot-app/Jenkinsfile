@@ -59,7 +59,7 @@ pipeline {
                         sh '''
                             git config user.email "gokulprasadthangavel@gmail.com"
                             git config user.name "gokulprasadtr"
-                            sed -i "s|abhishekf5/ultimate-cicd:replaceImageTag|${DOCKER_IMAGE}|g" deployment.yml
+                            sed -i "s|image: .*|image: ${DOCKER_IMAGE}|g" deployment.yml
                             git add deployment.yml
                             git commit -m "Update deployment image to version ${BUILD_NUMBER}"
                             git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:jenkins
