@@ -7,6 +7,8 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = "carving/ultimate-cicd:${BUILD_NUMBER}"
+        GIT_REPO_NAME = "Jenkins-Zero-To-Hero"
+        GIT_USER_NAME = "gokulprasadtr"
     }
 
     stages {
@@ -47,6 +49,22 @@ pipeline {
                            docker logout
                            '''
                     }      
+                }
+            }
+        }
+        stage('Update Deployment File') {
+            steps {
+                dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests') {
+                    withCredentials([string(credentialsId: 'github',variable: 'GITHUB_TOKEN')]) {
+                        sh '''
+                            git config user.email "gokulprasadthangavel@gmail.com"
+                            git config user.name "gokulprasadtr"
+                            sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" deployment.yml
+                            git add deployment.yml
+                            git commit -m "Update deployment image to version ${BUILD_NUMBER}"
+                            git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:jenkins
+                           '''
+                    }
                 }
             }
         }
