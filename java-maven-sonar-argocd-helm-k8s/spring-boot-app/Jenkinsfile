@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        SONAR_URL = 'http://sonarqube:9000'
+        DOCKER_IMAGE = "carving/ultimate-cicd:${BUILD_NUMBER}"
     }
 
     stages {
@@ -33,6 +33,20 @@ pipeline {
                             -Dsonar.java.binaries=target/classes
                         '''
                     }
+                }
+            }
+        }
+        stage('Build and push docker image') {
+            steps {
+                dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
+                    withCredentials([usernamePassword(credentialsId: 'docker-cred',usernameVariable: 'DOCKER_USER',passwordVariable: 'DOCKER_PASS')]) {
+                        sh '''
+                           docker build -t $DOCKER_IMAGE .
+                           echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                           docker push $DOCKER_IMAGE
+                           docker logout
+                           '''
+                    }      
                 }
             }
         }
